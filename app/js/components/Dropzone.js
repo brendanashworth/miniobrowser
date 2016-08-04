@@ -23,12 +23,11 @@ import * as actions from '../actions'
 export default class Dropzone extends React.Component {
 
     onDrop(files) {
-        files.forEach(file => {
-            let req = new XMLHttpRequest()
+        // We don't support multiple file uploads yet.
+        let file = files[0]
+        let req = new XMLHttpRequest()
 
-            // Dispatch the upload.
-            web.dispatch(actions.uploadFile(file, req))
-        })
+        web.dispatch(actions.uploadFile(file, req))
     }
 
     render() {
@@ -41,7 +40,6 @@ export default class Dropzone extends React.Component {
             borderColor: '#fff'
         }
         const activeStyle = {
-            backgroundColor: '#eee',
             borderColor: '#777'
         }
         const rejectStyle = {
@@ -52,7 +50,7 @@ export default class Dropzone extends React.Component {
         // the user clicks on a file.
         return (
             <ReactDropzone style={style} activeStyle={activeStyle}
-                rejectStyle={rejectStyle}
+                rejectStyle={rejectStyle} multiple={false}
                 disableClick={true} onDrop={this.onDrop}>
                 {this.props.children}
             </ReactDropzone>
