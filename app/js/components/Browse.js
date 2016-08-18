@@ -32,6 +32,7 @@ import Dropdown from 'react-bootstrap/lib/Dropdown'
 import MenuItem from 'react-bootstrap/lib/MenuItem'
 import InputGroup from '../components/InputGroup'
 import Dropzone from '../components/Dropzone'
+import ObjectsList from '../components/ObjectsList'
 
 import logo from '../../img/logo.svg'
 
@@ -89,32 +90,6 @@ let SideBar = ({ visibleBuckets, loadBucket, currentBucket, selectBucket, search
     )
 }
 SideBar = connect(state => state) (SideBar)
-
-let ObjectsList = ({objects, currentPath, selectPrefix, dataType, removeObject, loadPath }) => {
-    const list = objects.map((object, i) => {
-        let size = object.name.endsWith('/') ? '-' : humanize.filesize(object.size)
-        let lastModified = object.name.endsWith('/') ? '-' : Moment(object.lastModified).format('lll')
-        let loadingClass = loadPath === `${currentPath}${object.name}` ? 'fesl-loading' : ''
-        return (
-            <div key={i} className={"fesl-row " + loadingClass} data-type={dataType(object.name, object.contentType)}>
-
-                {loadPath === `${currentPath}${object.name}` ? <span className="loading l-listing"><i /></span> : ''}
-
-                <div className="fesl-item fi-name">
-                    <a href="" onClick={(e) => selectPrefix(e, `${currentPath}${object.name}`)}>
-                        {object.name}
-                    </a>
-                </div>
-                <div className="fesl-item fi-size">{size}</div>
-                <div className="fesl-item fi-modified">{lastModified}</div>
-            </div>
-        )
-    })
-    return (
-        <div>{list}</div>
-    )
-}
-ObjectsList = connect(state => state) (ObjectsList)
 
 let Path = ({currentBucket, currentPath, selectPrefix}) => {
     let dirPath = []
@@ -679,7 +654,7 @@ export default class Browse extends React.Component {
                     </div>
 
                     <div className="feb-container">
-                        <ObjectsList removeObject={this.removeObject.bind(this)} dataType={this.dataType.bind(this)} selectPrefix={this.selectPrefix.bind(this)}/>
+                        <ObjectsList dataType={this.dataType.bind(this)} selectPrefix={this.selectPrefix.bind(this)}/>
                     </div>
                     {progressBar}
 
