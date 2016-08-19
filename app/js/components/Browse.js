@@ -23,7 +23,6 @@ import Moment from 'moment'
 import Modal from 'react-bootstrap/lib/Modal'
 import ModalBody from 'react-bootstrap/lib/ModalBody'
 import ModalHeader from 'react-bootstrap/lib/ModalHeader'
-import ProgressBar from 'react-bootstrap/lib/ProgressBar'
 import Alert from 'react-bootstrap/lib/Alert'
 import OverlayTrigger from 'react-bootstrap/lib/OverlayTrigger'
 import Tooltip from 'react-bootstrap/lib/Tooltip'
@@ -36,7 +35,7 @@ import ObjectsList from '../components/ObjectsList'
 import SideBar from '../components/SideBar'
 import Path from '../components/Path'
 import BrowserUpdate from '../components/BrowserUpdate'
-import ConfirmModal from '../components/ConfirmModal'
+import UploadModal from '../components/UploadModal'
 
 import logo from '../../img/logo.svg'
 
@@ -204,32 +203,6 @@ export default class Browse extends React.Component {
       })))
     }
 
-    uploadAbort(e) {
-        e.preventDefault()
-        const { dispatch, uploads } = this.props
-
-        for (var slug in uploads) {
-            let upload = uploads[slug]
-
-            upload.xhr.abort()
-            dispatch(actions.stopUpload({ slug }))
-        }
-
-        this.hideAbortModal(e)
-    }
-
-    showAbortModal(e) {
-        e.preventDefault()
-        const { dispatch } = this.props
-        dispatch (actions.setShowAbortModal(true))
-    }
-
-    hideAbortModal(e) {
-        e.preventDefault()
-        const { dispatch } = this.props
-        dispatch(actions.setShowAbortModal(false))
-    }
-
     hideAlert() {
         const { dispatch } = this.props
         dispatch(actions.hideAlert())
@@ -390,40 +363,10 @@ export default class Browse extends React.Component {
 
     render() {
         const { total, free } = this.props.storageInfo
-        const { showMakeBucketModal, showAbortModal, alert, sortNameOrder, sortSizeOrder, sortDateOrder, showAbout, showBucketPolicy, showSettings, settings } = this.props
+        const { showMakeBucketModal, alert, sortNameOrder, sortSizeOrder, sortDateOrder, showAbout, showBucketPolicy, showSettings, settings } = this.props
         const { version, memory, platform, runtime, envVars } = this.props.serverInfo
         const { sidebarStatus } = this.props
-        const { uploads } = this.props
 
-        let progressBar = ''
-        // If we have a file uploading, show the status box.
-        let numberUploading = Object.keys(uploads).length
-        if (numberUploading > 0) {
-            let totalLoaded = 0
-            let totalSize = 0
-
-            for (var slug in uploads) {
-                let upload = uploads[slug]
-
-                totalLoaded += upload.loaded
-                totalSize += upload.size
-            }
-            let percent = (totalLoaded / totalSize) * 100
-            let text = 'Uploading ' + (numberUploading == 1 ? `'${uploads[Object.keys(uploads)[0]].name}'` : `files (${numberUploading})`) + '...'
-
-            progressBar = <div className="alert progress animated fadeInUp alert-info">
-                <button type="button" className="close" onClick={this.showAbortModal.bind(this)}>
-                    <span>&times;</span>
-                </button>
-                <div className="text-center">
-                    <small>{text}</small>
-                </div>
-                <ProgressBar now={percent}/>
-                <div className="text-center">
-                    <small>{humanize.filesize(totalLoaded)} ({percent.toFixed(2)} %)</small>
-                </div>
-            </div>
-        }
         let alertBox = <Alert className={classNames({
                                           'alert': true,
                                           'animated': true,
@@ -436,22 +379,7 @@ export default class Browse extends React.Component {
                         </Alert>
         // Make sure you don't show a fading out alert box on the initial web-page load.
         if (!alert.message) alertBox = ''
-        let abortModal = ''
-        let baseClass = classNames({'abort-upload': true})
-        let okIcon = classNames({'fa': true, 'fa-stop': true})
-        let cancelIcon = classNames({'fa': true, 'fa-play': true})
-        if (showAbortModal) {
-            abortModal = <ConfirmModal
-                baseClass={baseClass}
-                text="Abort uploads in progress?"
-                okText='Abort'
-                okIcon={okIcon}
-                cancelText='Continue'
-                cancelIcon={cancelIcon}
-                okHandler={this.uploadAbort.bind(this)}
-                cancelHandler={this.hideAbortModal.bind(this)}>
-            </ConfirmModal>
-        }
+
         let signoutTooltip = <Tooltip id="tt-sign-out">Sign out</Tooltip>
         let uploadTooltip = <Tooltip id="tt-upload-file">Upload file</Tooltip>
         let makeBucketTooltip = <Tooltip id="tt-create-bucket">Create bucket</Tooltip>
@@ -461,7 +389,6 @@ export default class Browse extends React.Component {
         let freePercent = free * 100 / total
         return (
             <div className={classNames({'file-explorer': true, 'toggled': sidebarStatus})}>
-                {abortModal}
                 <SideBar landingPage={this.landingPage.bind(this)}
                             searchBuckets={this.searchBuckets.bind(this)}
                             selectBucket={this.selectBucket.bind(this)}
@@ -564,7 +491,8 @@ export default class Browse extends React.Component {
                     <div className="feb-container">
                         <ObjectsList dataType={this.dataType.bind(this)} selectPrefix={this.selectPrefix.bind(this)}/>
                     </div>
-                    {progressBar}
+
+                    <UploadModal />
 
                     <Dropdown dropup className="feb-actions" id="fe-action-toggle">
                         <Dropdown.Toggle noCaret className="feba-toggle">
